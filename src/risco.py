@@ -24,17 +24,43 @@ PESO_GRAU_DIFICULDADE = 1.5
 PESO_DESACELERACAO = 0.5
 
 
+NOMES_FATORES = {
+    "estilo_conducao": "Estilo de conducao",
+    "estilo_travagem": "Estilo de frenagem",
+    "grau_dificuldade": "Dificuldade da rota",
+    "desaceleracao_pct": "Desaceleracao/frenagem brusca",
+}
+
+
+def calcular_contribuicoes(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
+    """Calcula quantos pontos de risco cada indicador contribuiu, para
+    permitir identificar o principal fator associado ao risco."""
+    return {
+        "estilo_conducao": (10 - estilo_conducao) * PESO_ESTILO_CONDUCAO,
+        "estilo_travagem": (10 - estilo_travagem) * PESO_ESTILO_TRAVAGEM,
+        "grau_dificuldade": grau_dificuldade * PESO_GRAU_DIFICULDADE,
+        "desaceleracao_pct": desaceleracao_pct * PESO_DESACELERACAO,
+    }
+
+
 def calcular_score_risco(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
     """Calcula o score de risco (0-100) a partir dos indicadores de
     telemetria de um equipamento."""
-    score = (
-        (10 - estilo_conducao) * PESO_ESTILO_CONDUCAO
-        + (10 - estilo_travagem) * PESO_ESTILO_TRAVAGEM
-        + grau_dificuldade * PESO_GRAU_DIFICULDADE
-        + desaceleracao_pct * PESO_DESACELERACAO
+    contribuicoes = calcular_contribuicoes(
+        estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
     )
+    score = sum(contribuicoes.values())
     score = max(0, min(100, score))
     return round(score)
+
+
+def identificar_fator_principal(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
+    """Identifica qual indicador mais contribuiu para o score de risco."""
+    contribuicoes = calcular_contribuicoes(
+        estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
+    )
+    chave_principal = max(contribuicoes, key=contribuicoes.get)
+    return NOMES_FATORES[chave_principal]
 
 
 def classificar_risco(score):
@@ -68,12 +94,19 @@ def processar_registro(registro):
     )
     classificacao = classificar_risco(score)
     alerta = gerar_alerta(registro["equipamento_id"], score, classificacao)
+    fator_principal = identificar_fator_principal(
+        registro["estilo_conducao"],
+        registro["estilo_travagem"],
+        registro["grau_dificuldade"],
+        registro["desaceleracao_pct"],
+    )
 
     return {
         "equipamento_id": registro["equipamento_id"],
         "periodo": registro.get("periodo", "-"),
         "score_risco": score,
         "classificacao": classificacao,
+        "fator_principal": fator_principal,
         "alerta": alerta,
     }
 

@@ -9,7 +9,13 @@ import os
 from src.entrada import carregar_planilha_fleetboard, validar_dados
 from src.sensores import simular_lote
 from src.risco import processar_lote
-from src.saida import exibir_resumo, exportar_csv, exportar_json, gerar_grafico_distribuicao
+from src.saida import (
+    consultar_equipamento,
+    exibir_resumo,
+    exportar_csv,
+    exportar_json,
+    gerar_grafico_distribuicao,
+)
 
 DIR_BASE = os.path.dirname(os.path.abspath(__file__))
 DIR_SAIDA = os.path.join(DIR_BASE, "output")
@@ -48,6 +54,11 @@ def main():
         default=5,
         help="Quantidade de leituras simuladas (usado quando --fonte=simulado).",
     )
+    parser.add_argument(
+        "--consultar",
+        default=None,
+        help="Busca rapida por nome/id de equipamento nos resultados processados.",
+    )
     argumentos = parser.parse_args()
 
     dados = obter_dados_entrada(argumentos.fonte, argumentos.arquivo, argumentos.quantidade)
@@ -57,6 +68,10 @@ def main():
 
     resultados = processar_lote(dados)
     exibir_resumo(resultados)
+
+    if argumentos.consultar:
+        print()
+        consultar_equipamento(resultados, argumentos.consultar)
 
     caminho_csv = exportar_csv(resultados, os.path.join(DIR_SAIDA, "resultados.csv"))
     caminho_json = exportar_json(resultados, os.path.join(DIR_SAIDA, "resultados.json"))
