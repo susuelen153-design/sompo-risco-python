@@ -67,6 +67,11 @@ enunciado da disciplina não fixa uma fórmula exata, só pede faixa 0–100 e
 classificações interpretáveis. Ajustar em `src/risco.py` caso o grupo
 valide outros pesos com dados reais.
 
+Cada resultado também identifica o **fator principal** que mais contribuiu
+para o score daquele equipamento (`identificar_fator_principal` em
+`src/risco.py`), e o console mostra um ranking de fatores mais frequentes
+na frota inteira (seção `PRINCIPAIS FATORES DE RISCO NA FROTA`).
+
 ## Estrutura do projeto
 
 ```
@@ -95,6 +100,9 @@ python main.py --fonte fleetboard
 
 # Com sensores simulados
 python main.py --fonte simulado --quantidade 10
+
+# Consulta rapida por equipamento (funciona com qualquer --fonte)
+python main.py --fonte fleetboard --consultar "Teresa"
 ```
 
 ### Saídas geradas em `output/`

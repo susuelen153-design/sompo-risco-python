@@ -29,6 +29,33 @@ def exibir_resumo(df_resultados):
     for rotulo in ["BAIXO", "MODERADO", "ALTO", "CRITICO"]:
         print(f"{rotulo}: {contagem.get(rotulo, 0)}")
 
+    print()
+    print("=== PRINCIPAIS FATORES DE RISCO NA FROTA ===")
+    if "fator_principal" in df_resultados.columns:
+        ranking = df_resultados["fator_principal"].value_counts()
+        for fator, quantidade in ranking.items():
+            print(f"{fator}: {quantidade} equipamento(s)")
+
+
+def consultar_equipamento(df_resultados, termo_busca):
+    """Consulta rapida: filtra os resultados por parte do nome/id do
+    equipamento (busca case-insensitive)."""
+    encontrados = df_resultados[
+        df_resultados["equipamento_id"].str.contains(termo_busca, case=False, na=False)
+    ]
+    if encontrados.empty:
+        print(f"Nenhum equipamento encontrado para '{termo_busca}'.")
+        return encontrados
+
+    print(f"=== CONSULTA: '{termo_busca}' ===")
+    for _, linha in encontrados.iterrows():
+        print(
+            f"{linha['equipamento_id']} | {linha['periodo']} | "
+            f"score {linha['score_risco']} | {linha['classificacao']} | "
+            f"fator principal: {linha['fator_principal']}"
+        )
+    return encontrados
+
 
 def exportar_csv(df_resultados, caminho):
     os.makedirs(os.path.dirname(caminho), exist_ok=True)
