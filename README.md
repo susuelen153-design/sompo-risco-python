@@ -3,7 +3,7 @@
 Disciplina: Computational Thinking with Python - Sprint 3
 Professor: Kévin Allan Sales Rodrigues
 
-## Objetivo
+# Objetivo
 
 MVP em Python que recebe dados operacionais de equipamentos (telemetria real
 ou simulada), processa essas informações num motor de risco e gera saídas
@@ -11,24 +11,24 @@ interpretáveis: score, classificação e alertas. É a primeira versão do
 backend de análise de risco do projeto Sompo Seguros nessa disciplina,
 conectando a entrada de dados ao modelo de risco.
 
-## Relação com o resto do projeto
+# Relação com o resto do projeto
 
 Reaproveitamos o vocabulário e as faixas de valor que já validamos em
 outras entregas do grupo:
 
 - Score 0-100 e classificação BAIXO / MODERADO / ALTO / CRITICO: mesma
   convenção usada no modelo físico de dados da disciplina Cognitive Data
-  Science (`gemini_analyses`, `score_snapshots`, `equipment_profiles` no
+  Science e do nosso mockup (`gemini_analyses`, `score_snapshots`, `equipment_profiles` no
   schema SOMPO).
-- "Score de vistoria" e "perfil do equipamento": termos que vêm do
+- "Score de vistoria" e "perfil do equipamento": termos que vem do
   `CONTEXT.md` do repositório real do produto (`sompo-field-risk`, em
-  TypeScript/Node). Esse MVP em Python é um exercício separado daquele
-  repositório e implementa, de um jeito mais simples e determinístico, o
+  TypeScript/Node). Esse MVP em Python é um exercício separado do
+  repositório e implementa, de um jeito mais simples o
   eixo de contexto/telemetria do score de vistoria. Os eixos de condição
   física (fotos) e conformidade operacional (checklist) ficam com o motor
-  de IA (Gemini) do produto real, fora do escopo desta atividade.
+  de IA (Gemini) do produto real.
 
-## Dados de entrada
+# Dados de entrada
 
 Duas fontes, escolhidas por linha de comando:
 
@@ -40,7 +40,7 @@ Duas fontes, escolhidas por linha de comando:
    (`src/sensores.py`), pra simular um equipamento sem telemetria real
    disponível ainda.
 
-## Regras de negócio implementadas
+# Regras de negócio implementadas
 
 O score de risco (0-100) é calculado a partir de quatro indicadores de
 telemetria, com pesos que definimos pra este MVP (ver `src/risco.py`):
