@@ -50,7 +50,7 @@ telemetria, com pesos que definimos pra este MVP (ver `src/risco.py`):
 | Estilo de condução (nota 0-10, quanto maior melhor) | invertido | até 40 pontos |
 | Estilo de condução na frenagem (nota 0-10, quanto maior melhor) | invertido | até 30 pontos |
 | Grau de dificuldade da rota (nota 0-10) | direto | até 15 pontos |
-| Desaceleração / total percorrido (%) | direto | até ~15 pontos |
+| Desaceleração / total percorrido (%) | direto | até 15 pontos |
 
 Classificação:
 
@@ -61,17 +61,16 @@ Classificação:
 | 51-75 | ALTO |
 | 76-100 | CRITICO |
 
-Os pesos e as faixas de corte são uma definição nossa pra este MVP. O
+Os pesos e as faixas de corte são uma definição nossa para este MVP. O
 enunciado não fixa uma fórmula exata, só pede faixa 0-100 e classificações
-interpretáveis. Dá pra ajustar em `src/risco.py` se o grupo validar outros
-pesos com dados reais.
+interpretáveis. Dá pra ajustar em `src/risco.py`.
 
 Cada resultado também mostra o fator principal que mais pesou no score
 daquele equipamento (`identificar_fator_principal` em `src/risco.py`), e o
 console imprime um ranking dos fatores mais frequentes na frota inteira
 (seção `PRINCIPAIS FATORES DE RISCO NA FROTA`).
 
-## Estrutura do projeto
+# Estrutura do projeto
 
 ```
 sompo-risco-python/
@@ -85,9 +84,9 @@ sompo-risco-python/
     ├── sensores.py         # simulacao de sensores/API
     ├── risco.py             # calculo de score, classificacao e alertas
     └── saida.py              # resumo no console, exportacoes, grafico
-```
 
-## Como rodar
+
+# Como rodar
 
 ```bash
 python -m venv .venv
@@ -104,7 +103,7 @@ python main.py --fonte simulado --quantidade 10
 python main.py --fonte fleetboard --consultar "Teresa"
 ```
 
-### Saídas geradas em `output/`
+# Saídas geradas em `output/`
 
 - `resultados.csv` / `resultados.json`: um registro por equipamento
   processado, com score, classificação e alerta.
@@ -113,7 +112,7 @@ python main.py --fonte fleetboard --consultar "Teresa"
 - Resumo impresso no console (`=== RESULTADO ===`, `=== ALERTAS ===`,
   `=== DISTRIBUICAO POR CLASSIFICACAO ===`).
 
-## Validação e tratamento de dados
+# Validação e tratamento de dados
 
 `src/entrada.py` descarta registros com campos obrigatórios ausentes
 (estilo de condução, frenagem, dificuldade, desaceleração) ou distância
@@ -121,7 +120,7 @@ percorrida inválida (<= 0), e avisa quantos registros foram descartados
 antes de processar. Rodando com a planilha real, ele descarta 76 de 2092
 registros por esse motivo.
 
-## Requisitos técnicos atendidos
+# Requisitos técnicos atendidos
 
 - Funções: todo o fluxo é modularizado em funções por responsabilidade
   (`entrada.py`, `sensores.py`, `risco.py`, `saida.py`).
@@ -133,12 +132,10 @@ registros por esse motivo.
 - Pipeline claro: `main.py` separa entrada, processamento e saída em
   etapas sequenciais e legíveis.
 
-## Limitações conhecidas / próximos passos
+# Limitações conhecidas / próximos passos
 
 - O score cobre só o eixo de contexto/telemetria. Os eixos de condição
-  física (fotos) e conformidade operacional (checklist) ficam pra quando o
-  grupo integrar com o motor de IA do produto real.
-- Os pesos da fórmula de risco são uma primeira definição do grupo, não
-  calibrada estatisticamente. É um bom candidato pra disciplina de Machine
-  Learning & Modelling (Sprint 3), que já pede pelo menos 2 modelos
-  treinados e validados sobre um dataset de risco.
+  física (fotos) e conformidade operacional (checklist) ficam pra quando
+  integrarmos com o motor de IA do produto real.
+- Os pesos da fórmula de risco são nossa primeira definição, não
+  calibrada estatisticamente.
