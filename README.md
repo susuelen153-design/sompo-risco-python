@@ -84,7 +84,7 @@ sompo-risco-python/
     ├── sensores.py         # simulacao de sensores/API
     ├── risco.py             # calculo de score, classificacao e alertas
     └── saida.py              # resumo no console, exportacoes, grafico
-
+```
 
 # Como rodar
 
