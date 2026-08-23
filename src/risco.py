@@ -104,6 +104,8 @@ def processar_registro(registro):
     return {
         "equipamento_id": registro["equipamento_id"],
         "periodo": registro.get("periodo", "-"),
+        "condicao_ambiente": registro.get("condicao_ambiente", "-"),
+        "modo_operacao": registro.get("modo_operacao", "-"),
         "score_risco": score,
         "classificacao": classificacao,
         "fator_principal": fator_principal,

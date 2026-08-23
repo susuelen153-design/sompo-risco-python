@@ -13,10 +13,14 @@ NOMES_EQUIPAMENTO_DEMO = [
     "Caminhao Demo 2",
 ]
 
+CONDICOES_AMBIENTE = ["Tempo bom", "Chuva leve", "Chuva forte", "Neblina", "Vento forte"]
+MODOS_OPERACAO = ["CAMPO", "TRANSPORTE"]
+
 
 def simular_leitura_sensor(equipamento_id):
-    """Gera uma leitura de telemetria plausivel para um equipamento,
-    como se viesse de uma API/sensor em tempo real."""
+    """Gera uma leitura simulada de sensor/API pra um equipamento, como se
+    viesse de telemetria em tempo real: dados de condução (telemetria),
+    condicao ambiente e modo de operacao."""
     return {
         "equipamento_id": equipamento_id,
         "periodo": "Simulado",
@@ -25,6 +29,8 @@ def simular_leitura_sensor(equipamento_id):
         "grau_dificuldade": round(random.uniform(1.0, 9.0), 2),
         "desaceleracao_pct": round(random.uniform(0.0, 25.0), 2),
         "distancia_km": round(random.uniform(50.0, 3000.0), 1),
+        "condicao_ambiente": random.choice(CONDICOES_AMBIENTE),
+        "modo_operacao": random.choice(MODOS_OPERACAO),
     }
 
 
