@@ -24,7 +24,7 @@ def exibir_resumo(df_resultados):
             print(linha["alerta"])
 
     print()
-    print("=== DISTRIBUICAO POR CLASSIFICACAO ===")
+    print("=== DISTRIBUIÇÃO POR CLASSIFICAÇÃO ===")
     contagem = df_resultados["classificacao"].value_counts()
     for rotulo in ["BAIXO", "MODERADO", "ALTO", "CRITICO"]:
         print(f"{rotulo}: {contagem.get(rotulo, 0)}")
@@ -81,7 +81,7 @@ def gerar_grafico_distribuicao(df_resultados, caminho):
 
     figura, eixo = plt.subplots(figsize=(6, 4))
     eixo.bar(contagem.index, contagem.values, color=[cores[r] for r in ordem])
-    eixo.set_title("Distribuicao de risco por equipamento")
+    eixo.set_title("Distribuição de risco por equipamento")
     eixo.set_ylabel("Quantidade de equipamentos")
     figura.tight_layout()
     figura.savefig(caminho)

@@ -1,7 +1,7 @@
 """Motor de risco: calcula o score de vistoria, classifica e gera alertas.
 
 Reaproveita o vocabulario e as faixas de valor ja validadas no schema do
-banco SOMPO (Cognitive Data Science, Sprint 3): score 0-100 e classificacao
+banco SOMPO (Cognitive Data Science, Sprint 3): score 0-100 e classificação
 em BAIXO / MODERADO / ALTO / CRITICO.
 """
 
@@ -25,10 +25,10 @@ PESO_DESACELERACAO = 0.5
 
 
 NOMES_FATORES = {
-    "estilo_conducao": "Estilo de conducao",
+    "estilo_conducao": "Estilo de condução",
     "estilo_travagem": "Estilo de frenagem",
     "grau_dificuldade": "Dificuldade da rota",
-    "desaceleracao_pct": "Desaceleracao/frenagem brusca",
+    "desaceleracao_pct": "Desaceleração/frenagem brusca",
 }
 
 
@@ -75,11 +75,11 @@ def gerar_alerta(equipamento_id, score, classificacao):
     """Gera uma mensagem de alerta compreensivel para o usuario final,
     de acordo com o nivel de risco identificado."""
     if classificacao == "CRITICO":
-        return f"[ALERTA CRITICO] {equipamento_id}: risco {score} - inspecao imediata recomendada."
+        return f"[ALERTA CRITICO] {equipamento_id}: risco {score} - inspeção imediata recomendada."
     if classificacao == "ALTO":
-        return f"[ALERTA] {equipamento_id}: risco {score} - agendar inspecao em breve."
+        return f"[ALERTA] {equipamento_id}: risco {score} - agendar inspeção em breve."
     if classificacao == "MODERADO":
-        return f"[ATENCAO] {equipamento_id}: risco {score} - monitorar na proxima vistoria."
+        return f"[ATENÇÃO] {equipamento_id}: risco {score} - monitorar na próxima vistoria."
     return f"[OK] {equipamento_id}: risco {score} - dentro do esperado."
 
 

@@ -65,45 +65,45 @@ def montar():
     for run in titulo.runs:
         run.font.color.rgb = AZUL
 
-    sub = doc.add_paragraph("MVP de Analise de Risco Operacional (Python)")
+    sub = doc.add_paragraph("MVP de Análise de Risco Operacional (Python)")
     sub.runs[0].italic = True
 
     doc.add_paragraph("Disciplina: Computational Thinking with Python - Sprint 3")
-    doc.add_paragraph("Professor: Kevin Allan Sales Rodrigues")
+    doc.add_paragraph("Professor: Kévin Allan Sales Rodrigues")
     doc.add_paragraph("Projeto: Sompo Seguros")
 
     doc.add_heading("Objetivo", level=1)
     doc.add_paragraph(
         "MVP em Python que recebe dados operacionais de equipamentos (telemetria real ou "
-        "simulada), processa essas informacoes num motor de risco e gera saidas "
-        "interpretaveis: score, classificacao e alertas. E a primeira versao do backend de "
-        "analise de risco do projeto Sompo Seguros nessa disciplina, conectando a entrada "
+        "simulada), processa essas informações num motor de risco e gera saídas "
+        "interpretáveis: score, classificação e alertas. É a primeira versão do backend de "
+        "análise de risco do projeto Sompo Seguros nessa disciplina, conectando a entrada "
         "de dados ao modelo de risco."
     )
 
     doc.add_heading("Estrutura do projeto", level=1)
     tabela(doc, ["Arquivo", "Responsabilidade"], [
-        ["main.py", "Pipeline: entrada -> processamento -> saida"],
-        ["src/entrada.py", "Leitura da planilha e validacao de dados obrigatorios"],
-        ["src/sensores.py", "Simulacao de sensores/API (telemetria, ambiente, operacao)"],
-        ["src/risco.py", "Calculo do score, classificacao, fator principal e alertas"],
-        ["src/saida.py", "Resumo no console, exportacoes (CSV/JSON) e grafico"],
+        ["main.py", "Pipeline: entrada -> processamento -> saída"],
+        ["src/entrada.py", "Leitura da planilha e validação de dados obrigatórios"],
+        ["src/sensores.py", "Simulação de sensores/API (telemetria, ambiente, operação)"],
+        ["src/risco.py", "Cálculo do score, classificação, fator principal e alertas"],
+        ["src/saida.py", "Resumo no console, exportações (CSV/JSON) e gráfico"],
     ], larguras=[5, 11])
 
     doc.add_page_break()
 
-    doc.add_heading("Regras de negocio implementadas", level=1)
+    doc.add_heading("Regras de negócio implementadas", level=1)
     doc.add_paragraph(
-        "O score de risco (0-100) e calculado a partir de quatro indicadores de "
+        "O score de risco (0-100) é calculado a partir de quatro indicadores de "
         "telemetria, com pesos definidos para este MVP:"
     )
-    tabela(doc, ["Indicador", "Direcao", "Peso maximo"], [
-        ["Estilo de conducao (nota 0-10)", "invertido", "40 pontos"],
-        ["Estilo de conducao na frenagem (nota 0-10)", "invertido", "30 pontos"],
+    tabela(doc, ["Indicador", "Direção", "Peso máximo"], [
+        ["Estilo de condução (nota 0-10)", "invertido", "40 pontos"],
+        ["Estilo de condução na frenagem (nota 0-10)", "invertido", "30 pontos"],
         ["Grau de dificuldade da rota (nota 0-10)", "direto", "15 pontos"],
-        ["Desaceleracao / total percorrido (%)", "direto", "~15 pontos"],
+        ["Desaceleração / total percorrido (%)", "direto", "~15 pontos"],
     ], larguras=[9, 3.5, 3.5])
-    tabela(doc, ["Faixa de score", "Classificacao"], [
+    tabela(doc, ["Faixa de score", "Classificação"], [
         ["0 - 25", "BAIXO"],
         ["26 - 50", "MODERADO"],
         ["51 - 75", "ALTO"],
@@ -116,7 +116,7 @@ def montar():
     total = len(df)
     contagem = df["classificacao"].value_counts()
     doc.add_paragraph(f"Total de equipamentos processados: {total}")
-    tabela(doc, ["Classificacao", "Quantidade", "% da frota"], [
+    tabela(doc, ["Classificação", "Quantidade", "% da frota"], [
         [rotulo, contagem.get(rotulo, 0), f"{contagem.get(rotulo, 0) / total * 100:.1f}%"]
         for rotulo in ["BAIXO", "MODERADO", "ALTO", "CRITICO"]
     ], larguras=[6, 5, 5])
@@ -136,7 +136,7 @@ def montar():
     doc.add_heading("Equipamentos com maior risco identificado", level=1)
     top6 = df.sort_values("score_risco", ascending=False).head(6)
     tabela(
-        doc, ["Equipamento", "Periodo", "Score", "Classificacao", "Fator principal"],
+        doc, ["Equipamento", "Período", "Score", "Classificação", "Fator principal"],
         [
             [l["equipamento_id"], l["periodo"], l["score_risco"], l["classificacao"], l["fator_principal"]]
             for _, l in top6.iterrows()
@@ -146,30 +146,30 @@ def montar():
 
     doc.add_page_break()
 
-    doc.add_heading("Requisitos tecnicos atendidos", level=1)
-    tabela(doc, ["Requisito", "Onde esta"], [
-        ["Funcoes para modularizar o fluxo", "entrada.py, sensores.py, risco.py, saida.py"],
-        ["Estruturas condicionais (validacao, classificacao, alertas)", "validar_dados, classificar_risco, gerar_alerta"],
-        ["Uso de pandas", "Leitura, limpeza e agregacao dos dados"],
-        ["Pipeline claro (entrada / processamento / saida)", "main.py"],
-        ["README detalhado no GitHub", "Ver link do repositorio abaixo"],
+    doc.add_heading("Requisitos técnicos atendidos", level=1)
+    tabela(doc, ["Requisito", "Onde está"], [
+        ["Funções para modularizar o fluxo", "entrada.py, sensores.py, risco.py, saida.py"],
+        ["Estruturas condicionais (validação, classificação, alertas)", "validar_dados, classificar_risco, gerar_alerta"],
+        ["Uso de pandas", "Leitura, limpeza e agregação dos dados"],
+        ["Pipeline claro (entrada / processamento / saída)", "main.py"],
+        ["README detalhado no GitHub", "Ver link do repositório abaixo"],
     ], larguras=[9, 7])
 
     doc.add_heading("Cobertura funcional do enunciado", level=1)
     tabela(doc, ["Item pedido", "Status"], [
-        ["Backend modular com funcoes", "OK"],
-        ["Integracao com o modelo de risco", "OK"],
-        ["Entrada e validacao de dados (reais ou simulados)", "OK"],
-        ["Simulacao de sensores/API (telemetria, ambiente, operacao)", "OK"],
-        ["Saidas interpretaveis (score, classificacao, alertas)", "OK"],
-        ["Relatorios/dashboards simples e fatores de risco", "OK"],
-        ["Consulta rapida dos resultados", "OK"],
-        ["Validacao funcional do MVP (testado end-to-end)", "OK"],
+        ["Backend modular com funções", "OK"],
+        ["Integração com o modelo de risco", "OK"],
+        ["Entrada e validação de dados (reais ou simulados)", "OK"],
+        ["Simulação de sensores/API (telemetria, ambiente, operação)", "OK"],
+        ["Saídas interpretáveis (score, classificação, alertas)", "OK"],
+        ["Relatórios/dashboards simples e fatores de risco", "OK"],
+        ["Consulta rápida dos resultados", "OK"],
+        ["Validação funcional do MVP (testado end-to-end)", "OK"],
     ], larguras=[11, 5])
 
-    doc.add_heading("Codigo-fonte", level=1)
-    p = doc.add_paragraph(
-        "Repositorio (privado, acesso mediante convite): "
+    doc.add_heading("Código-fonte", level=1)
+    doc.add_paragraph(
+        "Repositório (privado, acesso mediante convite): "
         "github.com/susuelen153-design/sompo-risco-python"
     )
 

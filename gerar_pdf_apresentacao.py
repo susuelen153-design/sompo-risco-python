@@ -58,10 +58,10 @@ def montar_pdf():
 
     # Capa
     story.append(Paragraph("Sompo Field Risk", styles["TituloCapa"]))
-    story.append(Paragraph("MVP de Analise de Risco Operacional (Python)", styles["Subtitulo"]))
+    story.append(Paragraph("MVP de Análise de Risco Operacional (Python)", styles["Subtitulo"]))
     story.append(Spacer(1, 10))
     story.append(Paragraph("Disciplina: Computational Thinking with Python - Sprint 3", styles["Corpo"]))
-    story.append(Paragraph("Professor: Kevin Allan Sales Rodrigues", styles["Corpo"]))
+    story.append(Paragraph("Professor: Kévin Allan Sales Rodrigues", styles["Corpo"]))
     story.append(Paragraph("Projeto: Sompo Seguros", styles["Corpo"]))
     story.append(Spacer(1, 14))
 
@@ -69,9 +69,9 @@ def montar_pdf():
     story.append(Paragraph("Objetivo", styles["H2"]))
     story.append(Paragraph(
         "MVP em Python que recebe dados operacionais de equipamentos (telemetria real ou "
-        "simulada), processa essas informacoes num motor de risco e gera saidas "
-        "interpretaveis: score, classificacao e alertas. E a primeira versao do backend de "
-        "analise de risco do projeto Sompo Seguros nessa disciplina, conectando a entrada "
+        "simulada), processa essas informações num motor de risco e gera saídas "
+        "interpretáveis: score, classificação e alertas. É a primeira versão do backend de "
+        "análise de risco do projeto Sompo Seguros nessa disciplina, conectando a entrada "
         "de dados ao modelo de risco.", styles["Corpo"],
     ))
 
@@ -79,30 +79,30 @@ def montar_pdf():
     story.append(Paragraph("Estrutura do projeto", styles["H2"]))
     story.append(tabela_padrao([
         ["Arquivo", "Responsabilidade"],
-        ["main.py", "Pipeline: entrada -> processamento -> saida"],
-        ["src/entrada.py", "Leitura da planilha e validacao de dados obrigatorios"],
-        ["src/sensores.py", "Simulacao de sensores/API (telemetria, ambiente, operacao)"],
-        ["src/risco.py", "Calculo do score, classificacao, fator principal e alertas"],
-        ["src/saida.py", "Resumo no console, exportacoes (CSV/JSON) e grafico"],
+        ["main.py", "Pipeline: entrada -> processamento -> saída"],
+        ["src/entrada.py", "Leitura da planilha e validação de dados obrigatórios"],
+        ["src/sensores.py", "Simulação de sensores/API (telemetria, ambiente, operação)"],
+        ["src/risco.py", "Cálculo do score, classificação, fator principal e alertas"],
+        ["src/saida.py", "Resumo no console, exportações (CSV/JSON) e gráfico"],
     ], larguras=[5 * cm, 11 * cm]))
 
     # Regras de negocio
     story.append(PageBreak())
-    story.append(Paragraph("Regras de negocio implementadas", styles["H2"]))
+    story.append(Paragraph("Regras de negócio implementadas", styles["H2"]))
     story.append(Paragraph(
-        "O score de risco (0-100) e calculado a partir de quatro indicadores de "
+        "O score de risco (0-100) é calculado a partir de quatro indicadores de "
         "telemetria, com pesos definidos para este MVP:", styles["Corpo"],
     ))
     story.append(tabela_padrao([
-        ["Indicador", "Direcao", "Peso maximo"],
-        ["Estilo de conducao (nota 0-10)", "invertido", "40 pontos"],
-        ["Estilo de conducao na frenagem (nota 0-10)", "invertido", "30 pontos"],
+        ["Indicador", "Direção", "Peso máximo"],
+        ["Estilo de condução (nota 0-10)", "invertido", "40 pontos"],
+        ["Estilo de condução na frenagem (nota 0-10)", "invertido", "30 pontos"],
         ["Grau de dificuldade da rota (nota 0-10)", "direto", "15 pontos"],
-        ["Desaceleracao / total percorrido (%)", "direto", "~15 pontos"],
+        ["Desaceleração / total percorrido (%)", "direto", "~15 pontos"],
     ], larguras=[9 * cm, 3.5 * cm, 3.5 * cm]))
     story.append(Spacer(1, 8))
     story.append(tabela_padrao([
-        ["Faixa de score", "Classificacao"],
+        ["Faixa de score", "Classificação"],
         ["0 - 25", "BAIXO"],
         ["26 - 50", "MODERADO"],
         ["51 - 75", "ALTO"],
@@ -117,7 +117,7 @@ def montar_pdf():
     contagem = df["classificacao"].value_counts()
     story.append(Paragraph(f"Total de equipamentos processados: {total}", styles["Corpo"]))
     story.append(tabela_padrao([
-        ["Classificacao", "Quantidade", "% da frota"],
+        ["Classificação", "Quantidade", "% da frota"],
         *[
             [rotulo, str(contagem.get(rotulo, 0)), f"{contagem.get(rotulo, 0) / total * 100:.1f}%"]
             for rotulo in ["BAIXO", "MODERADO", "ALTO", "CRITICO"]
@@ -138,7 +138,7 @@ def montar_pdf():
     ))
 
     top6 = df.sort_values("score_risco", ascending=False).head(6)
-    linhas_top = [["Equipamento", "Periodo", "Score", "Classificacao", "Fator principal"]]
+    linhas_top = [["Equipamento", "Período", "Score", "Classificação", "Fator principal"]]
     for _, linha in top6.iterrows():
         linhas_top.append([
             linha["equipamento_id"], linha["periodo"], str(linha["score_risco"]),
@@ -152,33 +152,33 @@ def montar_pdf():
 
     # Requisitos tecnicos
     story.append(Spacer(1, 12))
-    story.append(Paragraph("Requisitos tecnicos atendidos", styles["H2"]))
+    story.append(Paragraph("Requisitos técnicos atendidos", styles["H2"]))
     story.append(tabela_padrao([
-        ["Requisito", "Onde esta"],
-        ["Funcoes para modularizar o fluxo", "entrada.py, sensores.py, risco.py, saida.py"],
-        ["Estruturas condicionais (validacao, classificacao, alertas)", "validar_dados, classificar_risco, gerar_alerta"],
-        ["Uso de pandas", "Leitura, limpeza e agregacao dos dados"],
-        ["Pipeline claro (entrada / processamento / saida)", "main.py"],
-        ["README detalhado no GitHub", "Ver link do repositorio abaixo"],
+        ["Requisito", "Onde está"],
+        ["Funções para modularizar o fluxo", "entrada.py, sensores.py, risco.py, saida.py"],
+        ["Estruturas condicionais (validação, classificação, alertas)", "validar_dados, classificar_risco, gerar_alerta"],
+        ["Uso de pandas", "Leitura, limpeza e agregação dos dados"],
+        ["Pipeline claro (entrada / processamento / saída)", "main.py"],
+        ["README detalhado no GitHub", "Ver link do repositório abaixo"],
     ], larguras=[9 * cm, 7 * cm]))
 
     story.append(Paragraph("Cobertura funcional do enunciado", styles["H2"]))
     story.append(tabela_padrao([
         ["Item pedido", "Status"],
-        ["Backend modular com funcoes", "OK"],
-        ["Integracao com o modelo de risco", "OK"],
-        ["Entrada e validacao de dados (reais ou simulados)", "OK"],
-        ["Simulacao de sensores/API (telemetria, ambiente, operacao)", "OK"],
-        ["Saidas interpretaveis (score, classificacao, alertas)", "OK"],
-        ["Relatorios/dashboards simples e fatores de risco", "OK"],
-        ["Consulta rapida dos resultados", "OK"],
-        ["Validacao funcional do MVP (testado end-to-end)", "OK"],
+        ["Backend modular com funções", "OK"],
+        ["Integração com o modelo de risco", "OK"],
+        ["Entrada e validação de dados (reais ou simulados)", "OK"],
+        ["Simulação de sensores/API (telemetria, ambiente, operação)", "OK"],
+        ["Saídas interpretáveis (score, classificação, alertas)", "OK"],
+        ["Relatórios/dashboards simples e fatores de risco", "OK"],
+        ["Consulta rápida dos resultados", "OK"],
+        ["Validação funcional do MVP (testado end-to-end)", "OK"],
     ], larguras=[11 * cm, 5 * cm]))
 
     story.append(Spacer(1, 16))
-    story.append(Paragraph("Codigo-fonte", styles["H2"]))
+    story.append(Paragraph("Código-fonte", styles["H2"]))
     story.append(Paragraph(
-        'Repositorio (privado - acesso mediante convite): '
+        'Repositório (privado - acesso mediante convite): '
         '<link href="https://github.com/susuelen153-design/sompo-risco-python">'
         'github.com/susuelen153-design/sompo-risco-python</link>',
         styles["Link"],

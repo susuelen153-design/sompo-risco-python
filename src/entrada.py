@@ -38,7 +38,7 @@ def _numero_br_para_float(valor):
 
 
 def carregar_planilha_fleetboard(caminho_arquivo, aba="Base Consolidada"):
-    """Le a planilha FleetBoard bruta e devolve um DataFrame com as colunas
+    """Lê a planilha FleetBoard bruta e devolve um DataFrame com as colunas
     renomeadas para os nomes usados no motor de risco."""
     bruto = pd.read_excel(caminho_arquivo, sheet_name=aba)
 
@@ -74,7 +74,7 @@ def validar_dados(df):
 
     if "distancia_km" in df.columns:
         suspeito = df["distancia_km"].fillna(0) <= 0
-        df.loc[suspeito, "_erros"] += "distancia_km invalida (<=0); "
+        df.loc[suspeito, "_erros"] += "distancia_km inválida (<=0); "
 
     invalidos = df[df["_erros"] != ""].copy()
     validos = df[df["_erros"] == ""].drop(columns="_erros").reset_index(drop=True)
