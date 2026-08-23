@@ -1,4 +1,4 @@
-# Sompo Field Risk - MVP de Análise de Risco Operacional (Python)
+# MVP de Análise de Risco Operacional
 
 Disciplina: Computational Thinking with Python - Sprint 3
 Professor: Kévin Allan Sales Rodrigues
