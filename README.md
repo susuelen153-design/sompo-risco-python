@@ -50,7 +50,12 @@ telemetria, com pesos que definimos pra este MVP (ver `src/risco.py`):
 | Estilo de condução (nota 0-10, quanto maior melhor) | invertido | até 40 pontos |
 | Estilo de condução na frenagem (nota 0-10, quanto maior melhor) | invertido | até 30 pontos |
 | Grau de dificuldade da rota (nota 0-10) | direto | até 15 pontos |
-| Desaceleração / total percorrido (%) | direto | até 15 pontos |
+| Desaceleração / total percorrido (%) | direto | até 15 pontos (`min(pct; 30) × 0,5`) |
+
+Os três primeiros indicadores são limitados pela própria escala (0–10), mas a desaceleração é um
+percentual **sem teto natural** — na planilha real chega a 40%, o que renderia 20 pontos e estouraria
+o orçamento de 100. Por isso o motor limita o indicador em 30% (`TETO_DESACELERACAO_PCT` em
+`src/risco.py`), mantendo os quatro pesos somando exatamente 100.
 
 Classificação:
 
@@ -83,7 +88,8 @@ sompo-risco-python/
     ├── entrada.py         # leitura da planilha + validacao de dados
     ├── sensores.py         # simulacao de sensores/API
     ├── risco.py             # calculo de score, classificacao e alertas
-    └── saida.py              # resumo no console, exportacoes, grafico
+    ├── validacao.py          # cenarios de teste do motor de risco
+    └── saida.py               # resumo no console, exportacoes, grafico
 ```
 
 # Como rodar
@@ -101,6 +107,9 @@ python main.py --fonte simulado --quantidade 10
 
 # Consulta rapida por equipamento (funciona com qualquer --fonte)
 python main.py --fonte fleetboard --consultar "Teresa"
+
+# Validação funcional: roda os cenários de teste do motor de risco
+python main.py --autoteste
 ```
 
 # Saídas geradas em `output/`
@@ -120,10 +129,72 @@ percorrida inválida (<= 0), e avisa quantos registros foram descartados
 antes de processar. Rodando com a planilha real, ele descarta 76 de 2092
 registros por esse motivo.
 
+# Resultados com os dados reais (FleetBoard)
+
+Rodada com os **2016 registros válidos** (de 2092 brutos):
+
+| Classificação | Equipamentos | % da frota |
+|---|---|---|
+| BAIXO | 101 | 5,0% |
+| MODERADO | 1512 | 75,0% |
+| ALTO | 403 | 20,0% |
+| CRITICO | 0 | 0,0% |
+
+| Fator principal | Equipamentos |
+|---|---|
+| Estilo de condução | 905 |
+| Desaceleração / frenagem brusca | 595 |
+| Dificuldade da rota | 485 |
+| Estilo de frenagem | 31 |
+
+## Por que nenhum equipamento aparece como CRITICO
+
+O score real da frota se concentra entre **15 e 64 pontos** (média 41,3;
+desvio 10,0). A faixa CRITICO (76-100) exige os quatro indicadores
+simultaneamente ruins, o que não ocorre em nenhum registro do período.
+
+Isso é um resultado, não um defeito — mas significa que **a contagem por
+classificação sozinha engana**: 75% da frota em MODERADO diz mais sobre a
+compressão da escala do que sobre a operação. Por isso o console também
+imprime uma leitura relativa à frota, com os percentis do score e o recorte
+do decil mais arriscado, que é a informação útil para priorizar vistoria:
+
+```
+P25: 34  |  P50: 41  |  P75: 48  |  P90: 56
+214 equipamento(s) no decil mais arriscado da frota (score >= 56)
+```
+
+As faixas absolutas foram mantidas em 0-25 / 26-50 / 51-75 / 76-100 de
+propósito, para continuarem compatíveis com a convenção do schema SOMPO
+usado nas outras disciplinas do projeto.
+
+# Validação funcional do MVP
+
+`python main.py --autoteste` roda seis cenários de entrada construídos para
+exercitar **todas** as faixas de classificação, incluindo as que não aparecem
+nos dados reais:
+
+```
+[OK ] Cenario 1 - condutor exemplar, rota facil      score   4 | BAIXO
+[OK ] Cenario 2 - condutor mediano, rota mediana     score  34 | MODERADO
+[OK ] Cenario 3 - frenagem ruim, rota dificil        score  60 | ALTO
+[OK ] Cenario 4 - pior caso operacional              score  90 | CRITICO
+[OK ] Cenario 5 - limite inferior absoluto           score   0 | BAIXO
+[OK ] Cenario 6 - limite superior absoluto           score 100 | CRITICO
+
+Faixas exercitadas nos cenários: ALTO, BAIXO, CRITICO, MODERADO
+Resultado: TODOS OS CENÁRIOS PASSARAM.
+```
+
+Os cenários 5 e 6 confirmam que a escala usa os extremos corretos: entrada
+perfeita gera score 0, pior entrada possível gera score 100. Isso prova que a
+lógica de CRITICO e o alerta correspondente funcionam, mesmo não sendo
+acionados pela planilha atual.
+
 # Requisitos técnicos atendidos
 
 - Funções: todo o fluxo é modularizado em funções por responsabilidade
-  (`entrada.py`, `sensores.py`, `risco.py`, `saida.py`).
+  (`entrada.py`, `sensores.py`, `risco.py`, `validacao.py`, `saida.py`).
 - Estruturas condicionais: validação de campos obrigatórios
   (`validar_dados`), classificação por faixa (`classificar_risco`) e
   geração de alertas por nível (`gerar_alerta`).

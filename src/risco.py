@@ -23,6 +23,13 @@ PESO_ESTILO_TRAVAGEM = 3.0
 PESO_GRAU_DIFICULDADE = 1.5
 PESO_DESACELERACAO = 0.5
 
+# Teto do indicador de desaceleração. Os outros três indicadores são limitados
+# pela própria escala (0-10), mas desaceleracao_pct é um percentual sem teto
+# natural: na planilha real chega a 40%, o que renderia até 20 pontos e
+# estouraria o orçamento de 100 pontos do score. Limitar em 30% mantém o teto
+# documentado de 15 pontos (30 * 0.5) e a soma dos quatro pesos em 100.
+TETO_DESACELERACAO_PCT = 30.0
+
 
 NOMES_FATORES = {
     "estilo_conducao": "Estilo de condução",
@@ -35,11 +42,12 @@ NOMES_FATORES = {
 def calcular_contribuicoes(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
     """Calcula quantos pontos de risco cada indicador contribuiu, para
     permitir identificar o principal fator associado ao risco."""
+    desaceleracao_limitada = min(desaceleracao_pct, TETO_DESACELERACAO_PCT)
     return {
         "estilo_conducao": (10 - estilo_conducao) * PESO_ESTILO_CONDUCAO,
         "estilo_travagem": (10 - estilo_travagem) * PESO_ESTILO_TRAVAGEM,
         "grau_dificuldade": grau_dificuldade * PESO_GRAU_DIFICULDADE,
-        "desaceleracao_pct": desaceleracao_pct * PESO_DESACELERACAO,
+        "desaceleracao_pct": desaceleracao_limitada * PESO_DESACELERACAO,
     }
 
 

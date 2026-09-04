@@ -29,6 +29,13 @@ def exibir_resumo(df_resultados):
     for rotulo in ["BAIXO", "MODERADO", "ALTO", "CRITICO"]:
         print(f"{rotulo}: {contagem.get(rotulo, 0)}")
 
+    faixas_vazias = [r for r in ["BAIXO", "MODERADO", "ALTO", "CRITICO"] if contagem.get(r, 0) == 0]
+    if faixas_vazias:
+        print(
+            f"(nenhum equipamento nas faixas {', '.join(faixas_vazias)} nesta rodada "
+            "- ver leitura relativa abaixo)"
+        )
+
     print()
     print("=== PRINCIPAIS FATORES DE RISCO NA FROTA ===")
     if "fator_principal" in df_resultados.columns:
@@ -36,12 +43,45 @@ def exibir_resumo(df_resultados):
         for fator, quantidade in ranking.items():
             print(f"{fator}: {quantidade} equipamento(s)")
 
+    exibir_leitura_relativa(df_resultados)
+
+
+def exibir_leitura_relativa(df_resultados):
+    """Mostra a distribuição do score dentro da própria frota.
+
+    A classificação BAIXO/MODERADO/ALTO/CRITICO usa faixas absolutas fixas
+    (0-100), mantidas iguais às do schema SOMPO para as disciplinas
+    conversarem entre si. Como o score real se concentra numa faixa estreita,
+    a contagem por classificação sozinha engana: quase todo mundo cai em
+    MODERADO. Os percentis abaixo mostram quem está pior *em relação à frota*,
+    que é a leitura útil para priorizar vistoria.
+    """
+    scores = df_resultados["score_risco"]
+    if scores.empty:
+        return
+
+    print()
+    print("=== LEITURA RELATIVA À FROTA (percentis do score) ===")
+    print(f"mínimo: {scores.min()}  |  mediana: {scores.median():.0f}  |  máximo: {scores.max()}")
+    print(f"média: {scores.mean():.1f}  |  desvio padrão: {scores.std():.1f}")
+    for percentil in [25, 50, 75, 90]:
+        print(f"P{percentil}: {scores.quantile(percentil / 100):.0f}")
+
+    corte = scores.quantile(0.90)
+    piores = df_resultados[scores >= corte]
+    print(
+        f"{len(piores)} equipamento(s) no decil mais arriscado da frota "
+        f"(score >= {corte:.0f}) - candidatos naturais a vistoria prioritária."
+    )
+
 
 def consultar_equipamento(df_resultados, termo_busca):
     """Consulta rapida: filtra os resultados por parte do nome/id do
     equipamento (busca case-insensitive)."""
     encontrados = df_resultados[
-        df_resultados["equipamento_id"].str.contains(termo_busca, case=False, na=False)
+        df_resultados["equipamento_id"]
+        .astype(str)
+        .str.contains(termo_busca, case=False, na=False)
     ]
     if encontrados.empty:
         print(f"Nenhum equipamento encontrado para '{termo_busca}'.")

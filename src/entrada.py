@@ -30,7 +30,11 @@ def _numero_br_para_float(valor):
     texto = str(valor).strip()
     if texto == "" or texto.lower() == "nan":
         return None
-    texto = texto.replace(".", "").replace(",", ".")
+    if "," in texto:
+        # O ponto só é separador de milhar quando há vírgula decimal. Sem essa
+        # checagem, um valor exportado noutro locale ("8.5") viraria 85 - erro
+        # de 10x que passaria despercebido, já que o score seguiria válido.
+        texto = texto.replace(".", "").replace(",", ".")
     try:
         return float(texto)
     except ValueError:

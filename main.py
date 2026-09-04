@@ -9,6 +9,7 @@ import os
 from src.entrada import carregar_planilha_fleetboard, validar_dados
 from src.sensores import simular_lote
 from src.risco import processar_lote
+from src.validacao import executar_autoteste
 from src.saida import (
     consultar_equipamento,
     exibir_resumo,
@@ -59,7 +60,16 @@ def main():
         default=None,
         help="Busca rapida por nome/id de equipamento nos resultados processados.",
     )
+    parser.add_argument(
+        "--autoteste",
+        action="store_true",
+        help="Roda os cenários de validação funcional do motor de risco e encerra.",
+    )
     argumentos = parser.parse_args()
+
+    if argumentos.autoteste:
+        executar_autoteste()
+        return
 
     dados = obter_dados_entrada(argumentos.fonte, argumentos.arquivo, argumentos.quantidade)
     if dados.empty:
