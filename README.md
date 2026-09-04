@@ -81,7 +81,7 @@ console imprime um ranking dos fatores mais frequentes na frota inteira
 sompo-risco-python/
 ├── main.py              # pipeline: entrada -> processamento -> saida
 ├── requirements.txt
-├── data/
+├── data/                 # nao versionado - ver aviso acima
 │   └── Base_Consolidada_Anonimizada_testes_4585.xlsx
 ├── output/               # gerado ao rodar (csv, json, grafico)
 └── src/
@@ -91,6 +91,16 @@ sompo-risco-python/
     ├── validacao.py          # cenarios de teste do motor de risco
     └── saida.py               # resumo no console, exportacoes, grafico
 ```
+
+> **A planilha de telemetria não está neste repositório.** Ela contém dados
+> operacionais de frota e fica fora do versionamento (`data/` está no
+> `.gitignore`). Para rodar com os dados reais, peça o arquivo ao grupo e
+> salve em `data/Base_Consolidada_Anonimizada_testes_4585.xlsx`.
+>
+> **Sem a planilha o projeto roda mesmo assim:** `--fonte simulado` gera
+> telemetria sintética e `--autoteste` valida o motor de risco. Os resultados
+> da rodada com os dados reais estão registrados em `output/` e resumidos na
+> seção *Resultados com os dados reais* abaixo.
 
 # Como rodar
 

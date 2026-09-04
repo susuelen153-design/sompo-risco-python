@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Dados operacionais da frota - nao versionar (ver README)
+data/
+*.xlsx
