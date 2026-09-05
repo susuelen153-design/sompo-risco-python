@@ -101,7 +101,7 @@ def montar():
         ["Estilo de condução (nota 0-10)", "invertido", "40 pontos"],
         ["Estilo de condução na frenagem (nota 0-10)", "invertido", "30 pontos"],
         ["Grau de dificuldade da rota (nota 0-10)", "direto", "15 pontos"],
-        ["Desaceleração / total percorrido (%)", "direto", "~15 pontos"],
+        ["Desaceleração / total percorrido (%)", "direto", "15 pontos (limitado a 30%)"],
     ], larguras=[9, 3.5, 3.5])
     tabela(doc, ["Faixa de score", "Classificação"], [
         ["0 - 25", "BAIXO"],

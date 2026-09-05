@@ -98,7 +98,7 @@ def montar_pdf():
         ["Estilo de condução (nota 0-10)", "invertido", "40 pontos"],
         ["Estilo de condução na frenagem (nota 0-10)", "invertido", "30 pontos"],
         ["Grau de dificuldade da rota (nota 0-10)", "direto", "15 pontos"],
-        ["Desaceleração / total percorrido (%)", "direto", "~15 pontos"],
+        ["Desaceleração / total percorrido (%)", "direto", "15 pontos (limitado a 30%)"],
     ], larguras=[9 * cm, 3.5 * cm, 3.5 * cm]))
     story.append(Spacer(1, 8))
     story.append(tabela_padrao([
