@@ -3,6 +3,8 @@
 Disciplina: Computational Thinking with Python - Sprint 3
 Professor: Kévin Allan Sales Rodrigues
 
+Repositório: https://github.com/susuelen153-design/sompo-risco-python
+
 ## Objetivo
 
 MVP em Python que recebe dados operacionais de equipamentos (telemetria real
