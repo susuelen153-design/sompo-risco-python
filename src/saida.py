@@ -43,7 +43,39 @@ def exibir_resumo(df_resultados):
         for fator, quantidade in ranking.items():
             print(f"{fator}: {quantidade} equipamento(s)")
 
+    exibir_contexto_operacional(df_resultados)
     exibir_leitura_relativa(df_resultados)
+
+
+def exibir_contexto_operacional(df_resultados):
+    """Mostra o efeito dos agravantes de ambiente e modo de operacao.
+
+    So aparece quando a fonte de dados traz esses campos. A planilha real da
+    FleetBoard e de telemetria pura, entao nessa rodada os fatores ficam
+    todos em 1,00 e a secao e omitida.
+    """
+    if "fator_ambiente" not in df_resultados.columns:
+        return
+
+    agravados = df_resultados[
+        (df_resultados["fator_ambiente"] > 1) | (df_resultados["fator_operacao"] > 1)
+    ]
+    if agravados.empty:
+        return
+
+    print()
+    print("=== AGRAVANTES DE CONTEXTO OPERACIONAL ===")
+    for _, linha in agravados.iterrows():
+        acrescimo = linha["score_risco"] - linha["score_base"]
+        print(
+            f"{linha['equipamento_id']} | {linha['condicao_ambiente']} / "
+            f"{linha['modo_operacao']} | base {linha['score_base']} "
+            f"-> {linha['score_risco']} (+{acrescimo})"
+        )
+    print(
+        f"{len(agravados)} de {len(df_resultados)} equipamento(s) tiveram o score "
+        "agravado pelo ambiente e/ou pelo modo de operacao."
+    )
 
 
 def exibir_leitura_relativa(df_resultados):

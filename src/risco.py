@@ -3,6 +3,20 @@
 Reaproveita o vocabulario e as faixas de valor ja validadas no schema do
 banco SOMPO (Cognitive Data Science, Sprint 3): score 0-100 e classificação
 em BAIXO / MODERADO / ALTO / CRITICO.
+
+O score tem duas partes:
+
+1. Score base (0-100), calculado a partir dos quatro indicadores de
+   TELEMETRIA. É o que a planilha real da FleetBoard fornece.
+2. Agravantes de CONTEXTO OPERACIONAL (condição do ambiente e modo de
+   operação), aplicados como multiplicadores sobre o score base.
+
+A separação existe porque a base real do projeto é de telemetria pura: ela
+não traz ambiente nem modo de operação. Os agravantes são NEUTROS (fator
+1,00) quando esses campos estão ausentes, então a rodada com os dados reais
+produz exatamente o score base. Já as leituras de sensor/API simuladas
+(src/sensores.py) trazem os dois campos, e é por esse caminho que o motor
+demonstra o consumo de entradas dinâmicas de ambiente e operação.
 """
 
 import pandas as pd
@@ -30,6 +44,26 @@ PESO_DESACELERACAO = 0.5
 # documentado de 15 pontos (30 * 0.5) e a soma dos quatro pesos em 100.
 TETO_DESACELERACAO_PCT = 30.0
 
+# Agravantes de contexto operacional. Multiplicam o score base.
+# 1,00 = neutro (não agrava). Valores definidos por nós para este MVP:
+# quanto pior a aderência/visibilidade, maior o agravante.
+FATORES_AMBIENTE = {
+    "TEMPO BOM": 1.00,
+    "VENTO FORTE": 1.05,
+    "NEBLINA": 1.10,
+    "CHUVA LEVE": 1.10,
+    "CHUVA FORTE": 1.20,
+}
+FATOR_AMBIENTE_PADRAO = 1.00
+
+# Operação em CAMPO agrava: terreno irregular, manobra em solo agrícola e
+# ausência de via pavimentada. TRANSPORTE (rodovia) é a referência neutra —
+# e é o modo que representa a base real da FleetBoard.
+FATORES_OPERACAO = {
+    "TRANSPORTE": 1.00,
+    "CAMPO": 1.10,
+}
+FATOR_OPERACAO_PADRAO = 1.00
 
 NOMES_FATORES = {
     "estilo_conducao": "Estilo de condução",
@@ -38,10 +72,42 @@ NOMES_FATORES = {
     "desaceleracao_pct": "Desaceleração/frenagem brusca",
 }
 
+NOME_FATOR_AMBIENTE = "Condição do ambiente"
+NOME_FATOR_OPERACAO = "Modo de operação"
+
+
+def _normalizar_categoria(valor):
+    """Normaliza um campo categórico vindo de sensor/planilha. Devolve None
+    quando o campo está ausente, vazio ou preenchido com o marcador '-'."""
+    if valor is None:
+        return None
+    if isinstance(valor, float) and pd.isna(valor):
+        return None
+    texto = str(valor).strip()
+    if texto == "" or texto == "-" or texto.lower() == "nan":
+        return None
+    return texto.upper()
+
+
+def obter_fator_ambiente(condicao_ambiente):
+    """Fator de agravamento da condição do ambiente (1,00 = neutro)."""
+    chave = _normalizar_categoria(condicao_ambiente)
+    if chave is None:
+        return FATOR_AMBIENTE_PADRAO
+    return FATORES_AMBIENTE.get(chave, FATOR_AMBIENTE_PADRAO)
+
+
+def obter_fator_operacao(modo_operacao):
+    """Fator de agravamento do modo de operação (1,00 = neutro)."""
+    chave = _normalizar_categoria(modo_operacao)
+    if chave is None:
+        return FATOR_OPERACAO_PADRAO
+    return FATORES_OPERACAO.get(chave, FATOR_OPERACAO_PADRAO)
+
 
 def calcular_contribuicoes(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
-    """Calcula quantos pontos de risco cada indicador contribuiu, para
-    permitir identificar o principal fator associado ao risco."""
+    """Calcula quantos pontos de risco cada indicador de telemetria
+    contribuiu, para permitir identificar o principal fator do risco."""
     desaceleracao_limitada = min(desaceleracao_pct, TETO_DESACELERACAO_PCT)
     return {
         "estilo_conducao": (10 - estilo_conducao) * PESO_ESTILO_CONDUCAO,
@@ -51,24 +117,57 @@ def calcular_contribuicoes(estilo_conducao, estilo_travagem, grau_dificuldade, d
     }
 
 
-def calcular_score_risco(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
-    """Calcula o score de risco (0-100) a partir dos indicadores de
-    telemetria de um equipamento."""
+def calcular_score_base(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
+    """Score de risco (0-100) só com os indicadores de telemetria."""
     contribuicoes = calcular_contribuicoes(
         estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
     )
-    score = sum(contribuicoes.values())
-    score = max(0, min(100, score))
-    return round(score)
+    return max(0.0, min(100.0, sum(contribuicoes.values())))
 
 
-def identificar_fator_principal(estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct):
-    """Identifica qual indicador mais contribuiu para o score de risco."""
+def calcular_score_risco(
+    estilo_conducao,
+    estilo_travagem,
+    grau_dificuldade,
+    desaceleracao_pct,
+    condicao_ambiente=None,
+    modo_operacao=None,
+):
+    """Score de risco final (0-100): telemetria agravada pelo contexto
+    operacional. Sem ambiente/operação, devolve o próprio score base."""
+    base = calcular_score_base(
+        estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
+    )
+    agravado = base * obter_fator_ambiente(condicao_ambiente) * obter_fator_operacao(modo_operacao)
+    return round(max(0.0, min(100.0, agravado)))
+
+
+def identificar_fator_principal(
+    estilo_conducao,
+    estilo_travagem,
+    grau_dificuldade,
+    desaceleracao_pct,
+    condicao_ambiente=None,
+    modo_operacao=None,
+):
+    """Identifica o que mais pesou no score: o indicador de telemetria de
+    maior contribuição ou, se agravar mais que ele, o contexto operacional."""
     contribuicoes = calcular_contribuicoes(
         estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
     )
     chave_principal = max(contribuicoes, key=contribuicoes.get)
-    return NOMES_FATORES[chave_principal]
+    candidatos = {NOMES_FATORES[chave_principal]: contribuicoes[chave_principal]}
+
+    base = calcular_score_base(
+        estilo_conducao, estilo_travagem, grau_dificuldade, desaceleracao_pct
+    )
+    fator_ambiente = obter_fator_ambiente(condicao_ambiente)
+    fator_operacao = obter_fator_operacao(modo_operacao)
+    # Pontos que cada agravante acrescentou sobre o score base.
+    candidatos[NOME_FATOR_AMBIENTE] = base * (fator_ambiente - 1)
+    candidatos[NOME_FATOR_OPERACAO] = base * fator_ambiente * (fator_operacao - 1)
+
+    return max(candidatos, key=candidatos.get)
 
 
 def classificar_risco(score):
@@ -94,11 +193,25 @@ def gerar_alerta(equipamento_id, score, classificacao):
 def processar_registro(registro):
     """Processa um unico registro de telemetria (dict ou pandas.Series) e
     devolve o resultado completo do motor de risco para ele."""
+    condicao_ambiente = registro.get("condicao_ambiente")
+    modo_operacao = registro.get("modo_operacao")
+
+    base = calcular_score_base(
+        registro["estilo_conducao"],
+        registro["estilo_travagem"],
+        registro["grau_dificuldade"],
+        registro["desaceleracao_pct"],
+    )
+    fator_ambiente = obter_fator_ambiente(condicao_ambiente)
+    fator_operacao = obter_fator_operacao(modo_operacao)
+
     score = calcular_score_risco(
         registro["estilo_conducao"],
         registro["estilo_travagem"],
         registro["grau_dificuldade"],
         registro["desaceleracao_pct"],
+        condicao_ambiente,
+        modo_operacao,
     )
     classificacao = classificar_risco(score)
     alerta = gerar_alerta(registro["equipamento_id"], score, classificacao)
@@ -107,13 +220,18 @@ def processar_registro(registro):
         registro["estilo_travagem"],
         registro["grau_dificuldade"],
         registro["desaceleracao_pct"],
+        condicao_ambiente,
+        modo_operacao,
     )
 
     return {
         "equipamento_id": registro["equipamento_id"],
         "periodo": registro.get("periodo", "-"),
-        "condicao_ambiente": registro.get("condicao_ambiente", "-"),
-        "modo_operacao": registro.get("modo_operacao", "-"),
+        "condicao_ambiente": condicao_ambiente if _normalizar_categoria(condicao_ambiente) else "-",
+        "modo_operacao": modo_operacao if _normalizar_categoria(modo_operacao) else "-",
+        "score_base": round(base),
+        "fator_ambiente": round(fator_ambiente, 2),
+        "fator_operacao": round(fator_operacao, 2),
         "score_risco": score,
         "classificacao": classificacao,
         "fator_principal": fator_principal,

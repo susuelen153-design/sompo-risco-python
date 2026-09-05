@@ -3,7 +3,7 @@
 Disciplina: Computational Thinking with Python - Sprint 3
 Professor: Kévin Allan Sales Rodrigues
 
-# Objetivo
+## Objetivo
 
 MVP em Python que recebe dados operacionais de equipamentos (telemetria real
 ou simulada), processa essas informações num motor de risco e gera saídas
@@ -11,7 +11,7 @@ interpretáveis: score, classificação e alertas. É a primeira versão do
 backend de análise de risco do projeto Sompo Seguros nessa disciplina,
 conectando a entrada de dados ao modelo de risco.
 
-# Relação com o resto do projeto
+## Relação com o resto do projeto
 
 Reaproveitamos o vocabulário e as faixas de valor que já validamos em
 outras entregas do grupo:
@@ -28,7 +28,7 @@ outras entregas do grupo:
   física (fotos) e conformidade operacional (checklist) ficam com o motor
   de IA (Gemini) do produto real.
 
-# Dados de entrada
+## Dados de entrada
 
 Duas fontes, escolhidas por linha de comando:
 
@@ -40,7 +40,7 @@ Duas fontes, escolhidas por linha de comando:
    (`src/sensores.py`), pra simular um equipamento sem telemetria real
    disponível ainda.
 
-# Regras de negócio implementadas
+## Regras de negócio implementadas
 
 O score de risco (0-100) é calculado a partir de quatro indicadores de
 telemetria, com pesos que definimos pra este MVP (ver `src/risco.py`):
@@ -70,12 +70,40 @@ Os pesos e as faixas de corte são uma definição nossa para este MVP. O
 enunciado não fixa uma fórmula exata, só pede faixa 0-100 e classificações
 interpretáveis. Dá pra ajustar em `src/risco.py`.
 
-Cada resultado também mostra o fator principal que mais pesou no score
-daquele equipamento (`identificar_fator_principal` em `src/risco.py`), e o
-console imprime um ranking dos fatores mais frequentes na frota inteira
-(seção `PRINCIPAIS FATORES DE RISCO NA FROTA`).
+### Agravantes de contexto operacional
 
-# Estrutura do projeto
+Os quatro indicadores acima produzem o **score base**, que é o que a nossa
+base real fornece: a planilha da FleetBoard é de telemetria pura, sem
+ambiente nem modo de operação. Mas o sistema também precisa consumir esses
+dois campos quando eles chegam por sensor/API, então o motor aplica dois
+agravantes sobre o score base:
+
+| Condição do ambiente | Fator | | Modo de operação | Fator |
+|---|---|---|---|---|
+| Tempo bom | 1,00 | | TRANSPORTE (rodovia) | 1,00 |
+| Vento forte | 1,05 | | CAMPO (terreno irregular) | 1,10 |
+| Neblina | 1,10 | | | |
+| Chuva leve | 1,10 | | | |
+| Chuva forte | 1,20 | | | |
+
+`score final = min(100; score base × fator ambiente × fator operação)`
+
+Os dois fatores são **neutros (1,00) quando o campo está ausente**. Essa
+escolha é deliberada: é o que garante que a rodada com a nossa base de
+telemetria continue produzindo exatamente o score base, sem inventar
+condição de ambiente que a planilha não tem. Quem exercita os agravantes é a
+fonte `simulado`, que gera ambiente e modo de operação a cada leitura — e o
+console imprime a seção `AGRAVANTES DE CONTEXTO OPERACIONAL` mostrando, por
+equipamento, quantos pontos o contexto acrescentou sobre a telemetria.
+
+Cada resultado também mostra o fator principal que mais pesou no score
+daquele equipamento (`identificar_fator_principal` em `src/risco.py`), que
+compara as contribuições dos quatro indicadores de telemetria com os pontos
+acrescentados por cada agravante. O console imprime um ranking dos fatores
+mais frequentes na frota inteira (seção `PRINCIPAIS FATORES DE RISCO NA
+FROTA`).
+
+## Estrutura do projeto
 
 ```
 sompo-risco-python/
@@ -102,11 +130,14 @@ sompo-risco-python/
 > da rodada com os dados reais estão registrados em `output/` e resumidos na
 > seção *Resultados com os dados reais* abaixo.
 
-# Como rodar
+## Como rodar
 
 ```bash
 python -m venv .venv
+
 .venv\Scripts\activate        # Windows
+source .venv/bin/activate     # Linux / macOS
+
 pip install -r requirements.txt
 
 # Com a planilha real
@@ -122,16 +153,20 @@ python main.py --fonte fleetboard --consultar "Teresa"
 python main.py --autoteste
 ```
 
-# Saídas geradas em `output/`
+## Saídas geradas em `output/`
 
 - `resultados.csv` / `resultados.json`: um registro por equipamento
-  processado, com score, classificação e alerta.
+  processado, com `score_base` (só telemetria), `fator_ambiente`,
+  `fator_operacao`, `score_risco` (final), classificação, fator principal
+  e alerta.
 - `distribuicao_risco.png`: gráfico de barras com a quantidade de
   equipamentos em cada faixa de risco.
 - Resumo impresso no console (`=== RESULTADO ===`, `=== ALERTAS ===`,
-  `=== DISTRIBUICAO POR CLASSIFICACAO ===`).
+  `=== DISTRIBUIÇÃO POR CLASSIFICAÇÃO ===`, `=== PRINCIPAIS FATORES DE RISCO
+  NA FROTA ===`, `=== AGRAVANTES DE CONTEXTO OPERACIONAL ===` e
+  `=== LEITURA RELATIVA À FROTA ===`).
 
-# Validação e tratamento de dados
+## Validação e tratamento de dados
 
 `src/entrada.py` descarta registros com campos obrigatórios ausentes
 (estilo de condução, frenagem, dificuldade, desaceleração) ou distância
@@ -139,7 +174,7 @@ percorrida inválida (<= 0), e avisa quantos registros foram descartados
 antes de processar. Rodando com a planilha real, ele descarta 76 de 2092
 registros por esse motivo.
 
-# Resultados com os dados reais (FleetBoard)
+## Resultados com os dados reais (FleetBoard)
 
 Rodada com os **2016 registros válidos** (de 2092 brutos):
 
@@ -157,7 +192,7 @@ Rodada com os **2016 registros válidos** (de 2092 brutos):
 | Dificuldade da rota | 485 |
 | Estilo de frenagem | 31 |
 
-## Por que nenhum equipamento aparece como CRITICO
+### Por que nenhum equipamento aparece como CRITICO
 
 O score real da frota se concentra entre **15 e 64 pontos** (média 41,3;
 desvio 10,0). A faixa CRITICO (76-100) exige os quatro indicadores
@@ -178,30 +213,39 @@ As faixas absolutas foram mantidas em 0-25 / 26-50 / 51-75 / 76-100 de
 propósito, para continuarem compatíveis com a convenção do schema SOMPO
 usado nas outras disciplinas do projeto.
 
-# Validação funcional do MVP
+## Validação funcional do MVP
 
-`python main.py --autoteste` roda seis cenários de entrada construídos para
-exercitar **todas** as faixas de classificação, incluindo as que não aparecem
-nos dados reais:
+`python main.py --autoteste` roda nove cenários de entrada construídos para
+exercitar **todas** as faixas de classificação (inclusive as que não aparecem
+nos dados reais) e os agravantes de contexto. O teste confere score e
+classificação, não só a faixa:
 
 ```
-[OK ] Cenario 1 - condutor exemplar, rota facil      score   4 | BAIXO
-[OK ] Cenario 2 - condutor mediano, rota mediana     score  34 | MODERADO
-[OK ] Cenario 3 - frenagem ruim, rota dificil        score  60 | ALTO
-[OK ] Cenario 4 - pior caso operacional              score  90 | CRITICO
-[OK ] Cenario 5 - limite inferior absoluto           score   0 | BAIXO
-[OK ] Cenario 6 - limite superior absoluto           score 100 | CRITICO
+[OK ] Cenario 1 - condutor exemplar, rota facil    base   4 x 1.00 x 1.00 =   4 | BAIXO
+[OK ] Cenario 2 - condutor mediano, rota mediana   base  34 x 1.00 x 1.00 =  34 | MODERADO
+[OK ] Cenario 3 - frenagem ruim, rota dificil      base  60 x 1.00 x 1.00 =  60 | ALTO
+[OK ] Cenario 4 - pior caso operacional            base  90 x 1.00 x 1.00 =  90 | CRITICO
+[OK ] Cenario 5 - limite inferior absoluto         base   0 x 1.00 x 1.00 =   0 | BAIXO
+[OK ] Cenario 6 - limite superior absoluto         base 100 x 1.00 x 1.00 = 100 | CRITICO
+[OK ] Cenario 7 - telemetria pura (sem contexto)   base  45 x 1.00 x 1.00 =  45 | MODERADO
+[OK ] Cenario 8 - contexto neutro                  base  45 x 1.00 x 1.00 =  45 | MODERADO
+[OK ] Cenario 9 - chuva forte + operacao em CAMPO  base  45 x 1.20 x 1.10 =  59 | ALTO
 
 Faixas exercitadas nos cenários: ALTO, BAIXO, CRITICO, MODERADO
 Resultado: TODOS OS CENÁRIOS PASSARAM.
 ```
+
+Os cenários 7, 8 e 9 têm **telemetria idêntica** e só diferem no contexto.
+Juntos eles provam as duas propriedades que o motor precisa ter: o contexto
+ausente ou neutro não altera o score (7 e 8 dão 45), e o contexto ruim chega
+a mudar a faixa do equipamento (9 sobe de MODERADO para ALTO).
 
 Os cenários 5 e 6 confirmam que a escala usa os extremos corretos: entrada
 perfeita gera score 0, pior entrada possível gera score 100. Isso prova que a
 lógica de CRITICO e o alerta correspondente funcionam, mesmo não sendo
 acionados pela planilha atual.
 
-# Requisitos técnicos atendidos
+## Requisitos técnicos atendidos
 
 - Funções: todo o fluxo é modularizado em funções por responsabilidade
   (`entrada.py`, `sensores.py`, `risco.py`, `validacao.py`, `saida.py`).
@@ -209,14 +253,21 @@ acionados pela planilha atual.
   (`validar_dados`), classificação por faixa (`classificar_risco`) e
   geração de alertas por nível (`gerar_alerta`).
 - pandas: leitura da planilha, conversão de números em formato brasileiro,
-  filtragem de registros inválidos e agregação da distribuição de risco.
+  filtragem de registros inválidos, agregação da distribuição de risco e
+  percentis da frota.
+- Simulação de sensores/API: `src/sensores.py` gera telemetria, condição do
+  ambiente e modo de operação, e os três alimentam o motor de risco
+  (`obter_fator_ambiente` / `obter_fator_operacao` em `src/risco.py`).
 - Pipeline claro: `main.py` separa entrada, processamento e saída em
   etapas sequenciais e legíveis.
 
-# Limitações conhecidas / próximos passos
+## Limitações conhecidas / próximos passos
 
 - O score cobre só o eixo de contexto/telemetria. Os eixos de condição
   física (fotos) e conformidade operacional (checklist) ficam pra quando
   integrarmos com o motor de IA do produto real.
-- Os pesos da fórmula de risco são nossa primeira definição, não
-  calibrada estatisticamente.
+- Os pesos da fórmula de risco e os fatores de agravamento são nossa
+  primeira definição, não calibrados estatisticamente.
+- Ambiente e modo de operação só chegam pela fonte simulada. Assim que a
+  telemetria de campo passar a trazer esses campos, eles entram no motor
+  sem alteração de código — o pipeline já os lê e aplica.
